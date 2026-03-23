@@ -35,7 +35,7 @@ class PatientListSerializer(serializers.ModelSerializer):
 class PatientDetailSerializer(serializers.ModelSerializer):
     team_name = serializers.CharField(source="team.name", read_only=True)
     lab_results = LabResultSerializer(many=True, read_only=True)
-    allergies = serializers.SerializerMethodField()
+    allergies = PatientAllergySerializer(many=True, read_only=True)
 
     class Meta:
         model = Patient
@@ -49,18 +49,3 @@ class PatientDetailSerializer(serializers.ModelSerializer):
             "lab_results",
         ]
 
-    def get_allergies(self, obj):
-        allergy_list = []
-        for allergy in obj.allergies.all():
-            data = allergy.allergy_data
-            criticality = data.get("criticality")
-            if not criticality:
-                continue
-            allergy_list.append(
-                {
-                    "id": allergy.id,
-                    "substance": allergy.substance,
-                    "criticality": criticality,
-                }
-            )
-        return allergy_list
